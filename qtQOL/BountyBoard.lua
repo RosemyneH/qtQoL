@@ -160,6 +160,107 @@ local function RenderParty()
     end
 end
 
+local function RenderInstances()
+    local C = PelKit.COLORS
+    local groups = {}
+    local raidNames = {}
+    local order = QOL:GetPartyOrder()
+
+    HidePartyCards()
+    for i = 1, table.getn(order) do
+        local snapshot = QOL.bountySnapshots[order[i]]
+        if snapshot then
+            for targetIndex = 1, table.getn(snapshot.targets or {}) do
+                local target = snapshot.targets[targetIndex]
+                local raid = target.raid ~= "" and target.raid or "Unknown Instance"
+                if not groups[raid] then
+                    groups[raid] = {}
+                    table.insert(raidNames, raid)
+                end
+                table.insert(groups[raid], {
+                    owner = snapshot.name,
+                    target = target,
+                })
+            end
+        end
+    end
+
+    table.sort(raidNames)
+    local headerCount = 0
+    local rowCount = 0
+    local offset = 0
+    for raidIndex = 1, table.getn(raidNames) do
+        local raid = raidNames[raidIndex]
+        local entries = groups[raid]
+        table.sort(entries, function(left, right)
+            if left.target.boss == right.target.boss then
+                return left.owner < right.owner
+            end
+            return left.target.boss < right.target.boss
+        end)
+
+        headerCount = headerCount + 1
+        local header = instanceHeaders[headerCount]
+        header:ClearAllPoints()
+        header:SetPoint("TOPLEFT", 0, -offset)
+        header:SetText(raid .. " (" .. table.getn(entries) .. ")")
+        header:Show()
+        offset = offset + 19
+
+        for entryIndex = 1, table.getn(entries) do
+            rowCount = rowCount + 1
+            local entry = entries[entryIndex]
+            local target = entry.target
+            local row = instanceRows[rowCount]
+            local canQueue = not target.killed and (target.queueEntry or 0) > 0
+            local status = target.killed and "[x]" or "[ ]"
+            local color = target.killed and C.textDim or C.text
+
+            row.label:ClearAllPoints()
+            row.label:SetPoint("TOPLEFT", 5, -offset)
+            row.label:SetPoint("TOPRIGHT", canQueue and -58 or 0, -offset)
+            row.label:SetText(status .. " " .. target.boss .. " - " .. entry.owner)
+            row.label:SetTextColor(color[1], color[2], color[3])
+            row.label:Show()
+
+            row.queueButton:ClearAllPoints()
+            row.queueButton:SetPoint("TOPRIGHT", 0, -offset)
+            row.queueButton.owner = entry.owner
+            row.queueButton.slot = target.slot
+            if canQueue then row.queueButton:Show() else row.queueButton:Hide() end
+            offset = offset + 17
+        end
+        offset = offset + 5
+    end
+
+    for index = headerCount + 1, MAX_PARTY_TARGETS do
+        instanceHeaders[index]:Hide()
+    end
+    for index = rowCount + 1, MAX_PARTY_TARGETS do
+        instanceRows[index].label:Hide()
+        instanceRows[index].queueButton:Hide()
+    end
+
+    instanceContent:SetHeight(math.max(1, offset))
+    instanceScroll:SetVerticalScroll(0)
+    instanceScroll:Show()
+    if rowCount == 0 then
+        emptyLabel:SetText("No party bounty data yet. Press Sync Party after everyone has qtQOL enabled.")
+        emptyLabel:Show()
+    else
+        emptyLabel:Hide()
+    end
+end
+
+local function Render()
+    if not board then return end
+    if viewMode == "instances" then
+        RenderInstances()
+    else
+        RenderParty()
+    end
+end
+
 local function CreateBoard()
     if board or not PeloriaBountyFrame or not PelKit then return false end
     local C = PelKit.COLORS
@@ -200,6 +301,19 @@ local function CreateBoard()
     syncButton:SetPoint("LEFT", sayButton, "RIGHT", 7, 0)
     PelKit.OnClick(syncButton, function()
         QOL:RequestBountySync()
+    end)
+
+    toggleButton = PelKit.Button(board, 76, 22, "Instances")
+    toggleButton:SetPoint("LEFT", syncButton, "RIGHT", 7, 0)
+    PelKit.OnClick(toggleButton, function()
+        if viewMode == "party" then
+            viewMode = "instances"
+            toggleButton:SetText("Party")
+        else
+            viewMode = "party"
+            toggleButton:SetText("Instances")
+        end
+        Render()
     end)
 
     emptyLabel = PelKit.Label(board, "", "GameFontHighlightSmall", C.textDim)
