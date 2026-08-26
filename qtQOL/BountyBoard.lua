@@ -289,20 +289,25 @@ local function RenderInstances()
             local row = instanceRows[rowCount]
             local canQueue = not target.killed and (target.queueEntry or 0) > 0
             local status = target.killed and "[x]" or "[ ]"
-            local color = target.killed and C.textDim or C.text
+            local textColor = target.killed and C.textDim or C.text
 
+            row.frame:ClearAllPoints()
+            row.frame:SetPoint("TOPLEFT", 0, -offset)
+            row.background:SetTexture(color[1], color[2], color[3], entryIndex % 2 == 0 and 0.12 or 0.07)
             row.label:ClearAllPoints()
-            row.label:SetPoint("TOPLEFT", 5, -offset)
-            row.label:SetPoint("TOPRIGHT", canQueue and -58 or 0, -offset)
+            row.label:SetPoint("LEFT", 5, 0)
+            row.level:ClearAllPoints()
+            row.level:SetPoint("RIGHT", canQueue and -55 or -4, 0)
+            row.label:SetPoint("RIGHT", row.level, "LEFT", -6, 0)
             row.label:SetText(status .. " " .. target.boss .. " - " .. entry.owner)
-            row.label:SetTextColor(color[1], color[2], color[3])
-            row.label:Show()
+            row.label:SetTextColor(textColor[1], textColor[2], textColor[3])
+            row.level:SetText("Mythic +" .. FormatWholeNumber(entry.level))
+            row.level:SetTextColor(0.68, 0.62, 0.48)
 
-            row.queueButton:ClearAllPoints()
-            row.queueButton:SetPoint("TOPRIGHT", 0, -offset)
             row.queueButton.owner = entry.owner
             row.queueButton.slot = target.slot
             if canQueue then row.queueButton:Show() else row.queueButton:Hide() end
+            row.frame:Show()
             offset = offset + 17
         end
         offset = offset + 5
