@@ -104,7 +104,7 @@ local function RenderCard(card, snapshot)
     local count = math.min(MAX_TARGETS, table.getn(snapshot.targets or {}))
     card:SetHeight(math.max(45, 31 + count * 16))
     card.name:SetText(snapshot.name)
-    card.level:SetText("Mythic +" .. QOL:FormatCompactNumber(snapshot.level))
+    card.level:SetText("Mythic +" .. FormatWholeNumber(snapshot.level))
 
     for index = 1, MAX_TARGETS do
         local row = card.targets[index]
