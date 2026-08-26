@@ -236,19 +236,29 @@ function QOL:AnnounceEliteBounty()
     end
 end
 
-function QOL:QueueEliteTarget(slot)
+function QOL:QueueEliteTarget(owner, slot)
+    owner = ShortName(owner)
     slot = tonumber(slot)
-    if not slot or slot < 1 or slot > MAX_TARGETS then return end
-    local snapshot = self:CaptureEliteBounty()
+    if not owner or not slot or slot < 1 or slot > MAX_TARGETS then return end
+    local player = PlayerName()
+    local snapshot = owner == player and self:CaptureEliteBounty() or snapshots[owner]
     if not snapshot then return end
     for i = 1, table.getn(snapshot.targets) do
         local target = snapshot.targets[i]
         if target.slot == slot
             and not target.killed
             and target.queueEntry > 0
-            and PeloriaSend
         then
-            PeloriaSend("BNTYC^QUEUE^" .. ELITE_LINE_ID .. "^" .. (slot - 1))
+            if owner == player and PeloriaSend then
+                PeloriaSend("BNTYC^QUEUE^" .. ELITE_LINE_ID .. "^" .. (slot - 1))
+            elseif ClearAllLFGDungeons
+                and SetLFGDungeon
+                and JoinLFG
+            then
+                ClearAllLFGDungeons()
+                SetLFGDungeon(target.queueEntry)
+                JoinLFG()
+            end
             return
         end
     end

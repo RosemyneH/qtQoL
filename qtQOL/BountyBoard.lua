@@ -34,7 +34,7 @@ local function CreateMemberCard(parent)
         local queueButton = PelKit.Button(card, 48, 15, "Queue")
         queueButton:SetPoint("TOPRIGHT", -8, -(23 + (index - 1) * 16))
         PelKit.OnClick(queueButton, function(self)
-            QOL:QueueEliteTarget(self.slot)
+            QOL:QueueEliteTarget(self.owner, self.slot)
         end)
         queueButton:Hide()
         card.queueButtons[index] = queueButton
@@ -55,8 +55,7 @@ local function RenderCard(card, snapshot)
         local target = snapshot.targets[index]
         if target then
             local status = target.killed and "[x]" or "[ ]"
-            local canQueue = snapshot.name == QOL:GetPlayerName()
-                and not target.killed
+            local canQueue = not target.killed
                 and (target.queueEntry or 0) > 0
             row:ClearAllPoints()
             row:SetPoint("TOPLEFT", 10, -(25 + (index - 1) * 16))
@@ -65,6 +64,7 @@ local function RenderCard(card, snapshot)
             local color = target.killed and C.textDim or C.text
             row:SetTextColor(color[1], color[2], color[3])
             row:Show()
+            queueButton.owner = snapshot.name
             queueButton.slot = target.slot
             if canQueue then queueButton:Show() else queueButton:Hide() end
         else
