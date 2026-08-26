@@ -1,0 +1,8 @@
+## Interface: 30300
+## Title: qtQOL
+## Notes: Party quality-of-life tools for Peloria.
+## Author: Qt
+## Version: 1.0.0
+
+BountyData.lua
+BountyBoard.lua
