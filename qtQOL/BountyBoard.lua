@@ -248,6 +248,7 @@ local function RenderInstances()
                 end
                 table.insert(groups[raid], {
                     owner = snapshot.name,
+                    level = snapshot.level,
                     target = target,
                 })
             end
