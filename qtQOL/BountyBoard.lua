@@ -8,6 +8,34 @@ local CARD_GAP = 7
 local MAX_MEMBERS = 5
 local MAX_TARGETS = 4
 local MAX_PARTY_TARGETS = MAX_MEMBERS * MAX_TARGETS
+local INSTANCE_COLORS = {
+    { 0.36, 0.43, 0.48 },
+    { 0.43, 0.37, 0.48 },
+    { 0.35, 0.45, 0.39 },
+    { 0.48, 0.40, 0.34 },
+}
+local INSTANCE_ACHIEVEMENTS = {
+    ["blackwing lair"] = 685,
+    ["molten core"] = 686,
+    ["temple of ahn'qiraj"] = 687,
+    ["zul'gurub"] = 688,
+    ["ruins of ahn'qiraj"] = 689,
+    ["karazhan"] = 690,
+    ["zul'aman"] = 691,
+    ["gruul's lair"] = 692,
+    ["magtheridon's lair"] = 693,
+    ["serpentshrine cavern"] = 694,
+    ["the battle for mount hyjal"] = 695,
+    ["tempest keep"] = 696,
+    ["black temple"] = 697,
+    ["sunwell plateau"] = 698,
+    ["naxxramas"] = 576,
+    ["the obsidian sanctum"] = 624,
+    ["the eye of eternity"] = 622,
+    ["ulduar"] = 2894,
+    ["trial of the crusader"] = 3917,
+    ["icecrown citadel"] = 4532,
+}
 
 local board
 local cards = {}
@@ -19,15 +47,37 @@ local instanceHeaders = {}
 local instanceRows = {}
 local viewMode = "party"
 
+local function FormatWholeNumber(value)
+    local number = math.floor(math.abs(tonumber(value) or 0))
+    local text = tostring(number)
+    local parts = {}
+    while string.len(text) > 3 do
+        table.insert(parts, 1, string.sub(text, -3))
+        text = string.sub(text, 1, -4)
+    end
+    table.insert(parts, 1, text)
+    return (tonumber(value) or 0) < 0 and "-" .. table.concat(parts, ",") or table.concat(parts, ",")
+end
+
+local function GetInstanceIcon(raid)
+    local achievementID = INSTANCE_ACHIEVEMENTS[string.lower(raid or "")]
+    local icon = achievementID and GetAchievementInfo and select(10, GetAchievementInfo(achievementID))
+    return icon or "Interface\\Icons\\Achievement_Boss_Murmur"
+end
+
 local function CreateMemberCard(parent)
     local C = PelKit.COLORS
     local card = PelKit.Card(parent, BOARD_WIDTH - BOARD_PAD * 2, 98)
 
     card.name = PelKit.Label(card, "", "GameFontNormal", C.felBright)
     card.name:SetPoint("TOPLEFT", 10, -8)
+    card.name:SetPoint("TOPRIGHT", -150, -8)
+    card.name:SetJustifyH("LEFT")
 
     card.level = PelKit.Label(card, "", "GameFontNormal", C.gold)
     card.level:SetPoint("TOPRIGHT", -10, -8)
+    card.level:SetWidth(135)
+    card.level:SetJustifyH("RIGHT")
 
     card.targets = {}
     card.queueButtons = {}
