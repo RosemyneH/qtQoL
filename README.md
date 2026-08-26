@@ -106,6 +106,8 @@
   </li>
 </ul>
 
+<img width="1558" height="834" alt="image" src="https://github.com/user-attachments/assets/20ba13cb-06dd-4028-a5e8-65a2aff1869f" />
+
 <h2>License</h2>
 
 <p>
