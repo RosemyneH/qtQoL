@@ -271,9 +271,14 @@ local function RenderInstances()
 
         headerCount = headerCount + 1
         local header = instanceHeaders[headerCount]
+        local color = INSTANCE_COLORS[(raidIndex - 1) % table.getn(INSTANCE_COLORS) + 1]
         header:ClearAllPoints()
         header:SetPoint("TOPLEFT", 0, -offset)
-        header:SetText(raid .. " (" .. table.getn(entries) .. ")")
+        header.background:SetTexture(color[1], color[2], color[3], 0.32)
+        header.icon:SetTexture(GetInstanceIcon(raid))
+        header.icon:SetVertexColor(0.78, 0.78, 0.78)
+        header.label:SetText(raid .. " (" .. table.getn(entries) .. ")")
+        header.label:SetTextColor(0.78, 0.82, 0.84)
         header:Show()
         offset = offset + 19
 
