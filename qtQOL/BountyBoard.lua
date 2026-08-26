@@ -241,16 +241,18 @@ local function RenderInstances()
         if snapshot then
             for targetIndex = 1, table.getn(snapshot.targets or {}) do
                 local target = snapshot.targets[targetIndex]
-                local raid = target.raid ~= "" and target.raid or "Unknown Instance"
-                if not groups[raid] then
-                    groups[raid] = {}
-                    table.insert(raidNames, raid)
+                if not target.killed then
+                    local raid = target.raid ~= "" and target.raid or "Unknown Instance"
+                    if not groups[raid] then
+                        groups[raid] = {}
+                        table.insert(raidNames, raid)
+                    end
+                    table.insert(groups[raid], {
+                        owner = snapshot.name,
+                        level = snapshot.level,
+                        target = target,
+                    })
                 end
-                table.insert(groups[raid], {
-                    owner = snapshot.name,
-                    level = snapshot.level,
-                    target = target,
-                })
             end
         end
     end
