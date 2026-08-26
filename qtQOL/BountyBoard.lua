@@ -317,8 +317,7 @@ local function RenderInstances()
         instanceHeaders[index]:Hide()
     end
     for index = rowCount + 1, MAX_PARTY_TARGETS do
-        instanceRows[index].label:Hide()
-        instanceRows[index].queueButton:Hide()
+        instanceRows[index].frame:Hide()
     end
 
     instanceContent:SetHeight(math.max(1, offset))
