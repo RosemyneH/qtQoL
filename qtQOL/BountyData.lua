@@ -175,6 +175,14 @@ local function Send(message)
     end
 end
 
+local function EnsureLFGRole()
+    if not GetLFGRoles or not SetLFGRoles then return end
+    local leader, tank, healer, damage = GetLFGRoles()
+    if not tank and not healer and not damage then
+        SetLFGRoles(leader, false, false, true)
+    end
+end
+
 function QOL:BroadcastBountySnapshot(force)
     local snapshot = self:CaptureEliteBounty()
     if not snapshot then return false end
@@ -249,6 +257,7 @@ function QOL:QueueEliteTarget(owner, slot)
             and not target.killed
             and target.queueEntry > 0
         then
+            EnsureLFGRole()
             if owner == player and PeloriaSend then
                 PeloriaSend("BNTYC^QUEUE^" .. ELITE_LINE_ID .. "^" .. (slot - 1))
             elseif ClearAllLFGDungeons
