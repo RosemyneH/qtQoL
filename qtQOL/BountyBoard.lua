@@ -149,24 +149,43 @@ local function CreateInstanceView(parent)
     end)
 
     for index = 1, MAX_PARTY_TARGETS do
-        local header = PelKit.Label(instanceContent, "", "GameFontNormal", C.felBright)
-        header:SetPoint("TOPLEFT", 0, 0)
+        local header = CreateFrame("Frame", nil, instanceContent)
+        header:SetWidth(BOARD_WIDTH - BOARD_PAD * 2)
+        header:SetHeight(18)
+        header.background = header:CreateTexture(nil, "BACKGROUND")
+        header.background:SetAllPoints()
+        header.icon = header:CreateTexture(nil, "ARTWORK")
+        header.icon:SetWidth(15)
+        header.icon:SetHeight(15)
+        header.icon:SetPoint("LEFT", 3, 0)
+        header.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+        header.label = PelKit.Label(header, "", "GameFontNormal", C.text)
+        header.label:SetPoint("LEFT", header.icon, "RIGHT", 5, 0)
+        header.label:SetPoint("RIGHT", -5, 0)
         header:Hide()
         instanceHeaders[index] = header
 
         local row = {}
-        row.label = PelKit.Label(instanceContent, "", "GameFontHighlightSmall", C.text)
-        row.label:SetPoint("TOPLEFT", 5, 0)
-        row.label:SetPoint("TOPRIGHT", -58, 0)
+        row.frame = CreateFrame("Frame", nil, instanceContent)
+        row.frame:SetWidth(BOARD_WIDTH - BOARD_PAD * 2)
+        row.frame:SetHeight(17)
+        row.background = row.frame:CreateTexture(nil, "BACKGROUND")
+        row.background:SetAllPoints()
+        row.label = PelKit.Label(row.frame, "", "GameFontHighlightSmall", C.text)
+        row.label:SetPoint("LEFT", 5, 0)
         row.label:SetJustifyH("LEFT")
-        row.label:Hide()
 
-        row.queueButton = PelKit.Button(instanceContent, 48, 15, "Queue")
-        row.queueButton:SetPoint("TOPRIGHT", 0, 0)
+        row.level = PelKit.Label(row.frame, "", "GameFontHighlightSmall", C.gold)
+        row.level:SetWidth(110)
+        row.level:SetJustifyH("RIGHT")
+
+        row.queueButton = PelKit.Button(row.frame, 48, 15, "Queue")
+        row.queueButton:SetPoint("RIGHT", -1, 0)
         PelKit.OnClick(row.queueButton, function(self)
             QOL:QueueEliteTarget(self.owner, self.slot)
         end)
         row.queueButton:Hide()
+        row.frame:Hide()
         instanceRows[index] = row
     end
 
