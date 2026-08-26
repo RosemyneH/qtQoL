@@ -175,13 +175,55 @@ local function Send(message)
     end
 end
 
-local function EnsureLFGRole()
-    if not GetLFGRoles or not SetLFGRoles then return end
+local roleFrame = CreateFrame("Frame")
+local pendingRoleQueue
+local roleDelay = 0
+local roleAttempts = 0
+roleFrame:Hide()
+
+local function QueueWithLFGRole(callback)
+    if not GetLFGRoles or not SetLFGRoles then
+        callback()
+        return
+    end
+
+    local leader, tank, healer, damage = GetLFGRoles()
+    if not tank and not healer and not damage then damage = true end
+    SetLFGRoles(leader and true or false, tank and true or false, healer and true or false, damage and true or false)
+    pendingRoleQueue = callback
+    roleDelay = 0.6
+    roleAttempts = 1
+    roleFrame:Show()
+end
+
+roleFrame:SetScript("OnUpdate", function(self, elapsed)
+    if not pendingRoleQueue then
+        self:Hide()
+        return
+    end
+
+    roleDelay = roleDelay - elapsed
+    if roleDelay > 0 then return end
+
     local leader, tank, healer, damage = GetLFGRoles()
     if not tank and not healer and not damage then
-        SetLFGRoles(leader, false, false, true)
+        if roleAttempts >= 3 then
+            pendingRoleQueue = nil
+            self:Hide()
+            DEFAULT_CHAT_FRAME:AddMessage("|cffff8a00qtQOL:|r could not select an LFG role. Queue cancelled.")
+            return
+        end
+        SetLFGRoles(leader and true or false, false, false, true)
+        roleAttempts = roleAttempts + 1
+        roleDelay = 0.6
+        return
     end
-end
+
+    local callback = pendingRoleQueue
+    pendingRoleQueue = nil
+    self:Hide()
+    callback()
+end)
 
 function QOL:BroadcastBountySnapshot(force)
     local snapshot = self:CaptureEliteBounty()
@@ -257,17 +299,19 @@ function QOL:QueueEliteTarget(owner, slot)
             and not target.killed
             and target.queueEntry > 0
         then
-            EnsureLFGRole()
-            if owner == player and PeloriaSend then
-                PeloriaSend("BNTYC^QUEUE^" .. ELITE_LINE_ID .. "^" .. (slot - 1))
-            elseif ClearAllLFGDungeons
-                and SetLFGDungeon
-                and JoinLFG
-            then
-                ClearAllLFGDungeons()
-                SetLFGDungeon(target.queueEntry)
-                JoinLFG()
-            end
+            local queueEntry = target.queueEntry
+            QueueWithLFGRole(function()
+                if ClearAllLFGDungeons
+                    and SetLFGDungeon
+                    and JoinLFG
+                then
+                    ClearAllLFGDungeons()
+                    SetLFGDungeon(queueEntry)
+                    JoinLFG()
+                elseif owner == player and PeloriaSend then
+                    PeloriaSend("BNTYC^QUEUE^" .. ELITE_LINE_ID .. "^" .. (slot - 1))
+                end
+            end)
             return
         end
     end
