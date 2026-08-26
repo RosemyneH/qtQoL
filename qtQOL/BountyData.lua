@@ -160,6 +160,7 @@ local function SnapshotSignature(snapshot)
             target.killed and "1" or "0",
             target.boss,
             target.raid,
+            tostring(target.queueEntry),
         }, "^"))
     end
     return table.concat(parts, "~")
@@ -194,6 +195,7 @@ function QOL:BroadcastBountySnapshot(force)
             target.killed and "1" or "0",
             target.boss,
             target.raid,
+            tostring(target.queueEntry),
         }, "^"))
     end
     Send("D^" .. VERSION)
@@ -307,6 +309,7 @@ local function HandleAddonMessage(message, sender)
             killed = fields[4] == "1",
             boss = CleanText(fields[5], 72),
             raid = CleanText(fields[6], 72),
+            queueEntry = math.max(0, math.floor(tonumber(fields[7]) or 0)),
         }
         incoming.received = incoming.received + 1
         return
