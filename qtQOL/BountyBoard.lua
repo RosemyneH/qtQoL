@@ -7,10 +7,17 @@ local BOARD_PAD = 10
 local CARD_GAP = 7
 local MAX_MEMBERS = 5
 local MAX_TARGETS = 4
+local MAX_PARTY_TARGETS = MAX_MEMBERS * MAX_TARGETS
 
 local board
 local cards = {}
 local emptyLabel
+local toggleButton
+local instanceScroll
+local instanceContent
+local instanceHeaders = {}
+local instanceRows = {}
+local viewMode = "party"
 
 local function CreateMemberCard(parent)
     local C = PelKit.COLORS
@@ -74,12 +81,60 @@ local function RenderCard(card, snapshot)
     end
 end
 
-local function Render()
-    if not board then return end
+local function CreateInstanceView(parent)
+    local C = PelKit.COLORS
+    instanceScroll = CreateFrame("ScrollFrame", nil, parent)
+    instanceScroll:SetPoint("TOPLEFT", BOARD_PAD, -82)
+    instanceScroll:SetPoint("BOTTOMRIGHT", -BOARD_PAD, BOARD_PAD)
+    instanceScroll:EnableMouseWheel(true)
+
+    instanceContent = CreateFrame("Frame", nil, instanceScroll)
+    instanceContent:SetWidth(BOARD_WIDTH - BOARD_PAD * 2)
+    instanceContent:SetHeight(1)
+    instanceScroll:SetScrollChild(instanceContent)
+    instanceScroll:SetScript("OnMouseWheel", function(self, delta)
+        local maximum = math.max(0, instanceContent:GetHeight() - self:GetHeight())
+        local offset = math.max(0, math.min(maximum, self:GetVerticalScroll() - delta * 40))
+        self:SetVerticalScroll(offset)
+    end)
+
+    for index = 1, MAX_PARTY_TARGETS do
+        local header = PelKit.Label(instanceContent, "", "GameFontNormal", C.felBright)
+        header:SetPoint("TOPLEFT", 0, 0)
+        header:Hide()
+        instanceHeaders[index] = header
+
+        local row = {}
+        row.label = PelKit.Label(instanceContent, "", "GameFontHighlightSmall", C.text)
+        row.label:SetPoint("TOPLEFT", 5, 0)
+        row.label:SetPoint("TOPRIGHT", -58, 0)
+        row.label:SetJustifyH("LEFT")
+        row.label:Hide()
+
+        row.queueButton = PelKit.Button(instanceContent, 48, 15, "Queue")
+        row.queueButton:SetPoint("TOPRIGHT", 0, 0)
+        PelKit.OnClick(row.queueButton, function(self)
+            QOL:QueueEliteTarget(self.owner, self.slot)
+        end)
+        row.queueButton:Hide()
+        instanceRows[index] = row
+    end
+
+    instanceScroll:Hide()
+end
+
+local function HidePartyCards()
+    for index = 1, MAX_MEMBERS do
+        cards[index]:Hide()
+    end
+end
+
+local function RenderParty()
     local order = QOL:GetPartyOrder()
     local shown = 0
     local offset = 82
 
+    instanceScroll:Hide()
     for i = 1, table.getn(order) do
         local snapshot = QOL.bountySnapshots[order[i]]
         if snapshot and shown < MAX_MEMBERS then
@@ -157,6 +212,7 @@ local function CreateBoard()
         cards[index]:Hide()
     end
 
+    CreateInstanceView(board)
     QOL:RegisterBountyListener(Render)
     board:Show()
     Render()
