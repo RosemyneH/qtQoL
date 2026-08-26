@@ -6,3 +6,4 @@
 
 BountyData.lua
 BountyBoard.lua
+TransmogCache.lua
