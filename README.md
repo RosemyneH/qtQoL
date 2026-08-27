@@ -1,7 +1,7 @@
 <div align="center">
   <h1>qtQOL</h1>
   <p>Party quality-of-life tools built exclusively for the PeloriaWoW 3.3.5a private server.</p>
-  <p><strong>PeloriaWoW only · World of Warcraft 3.3.5a · Addon version 1.0.0</strong></p>
+  <p><strong>PeloriaWoW only · World of Warcraft 3.3.5a · Addon version 1.1.0</strong></p>
 </div>
 
 <blockquote>
