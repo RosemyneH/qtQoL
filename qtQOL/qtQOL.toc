@@ -2,8 +2,12 @@
 ## Title: qtQOL
 ## Notes: Party quality-of-life tools for Peloria.
 ## Author: Qt
-## Version: 1.0.0
+## Version: 1.1.0
+## SavedVariables: qtQOLDB
 
+Core.lua
 BountyData.lua
 BountyBoard.lua
 TransmogCache.lua
+CombatPerformance.lua
+Settings.lua
